@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kefko Travel Agent — Book a Flight</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+  --blue:#1CA6E0; --blue-dark:#0E7FB3; --blue-pale:#EAF7FD;
+  --ink:#12161C; --gray:#6B7480; --line:#E7ECF1; --bg:#F5F8FA;
+  --green:#1FAE6A; --radius:14px;
+}
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;color:var(--ink);background:var(--bg);}
+h1,h2,.brand b{font-family:'Poppins',sans-serif;}
+
+header{background:#fff;border-bottom:1px solid var(--line);padding:16px 6vw;display:flex;align-items:center;justify-content:space-between;}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand b{font-size:16px;display:block;}
+.brand span{font-size:11px;color:var(--gray);}
+.headline{background:linear-gradient(135deg,#0E3A5F 0%,#0B2138 100%);color:#fff;padding:60px 6vw 70px;text-align:center;}
+.headline h1{font-size:clamp(24px,4vw,38px);margin-bottom:10px;}
+.headline p{color:#C9D6E3;font-size:15px;max-width:520px;margin:0 auto;}
+
+.wrap{max-width:640px;margin:-40px auto 60px;padding:0 6vw;}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:0 12px 32px rgba(18,22,28,.08);}
+.card h2{font-size:18px;margin-bottom:4px;}
+.card .sub{color:var(--gray);font-size:13px;margin-bottom:22px;}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.field label{font-size:11.5px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.03em;display:block;margin-bottom:5px;}
+.field input,.field textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:13.5px;font-family:inherit;background:#FAFBFC;}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--blue);background:#fff;}
+.field.full{grid-column:1/-1;}
+textarea{resize:vertical;min-height:70px;}
+
+.btn{width:100%;background:var(--blue);color:#fff;border:none;padding:13px;border-radius:9px;font-size:14.5px;font-weight:700;cursor:pointer;margin-top:6px;}
+.btn:hover{background:var(--blue-dark);}
+.btn:disabled{opacity:.6;cursor:default;}
+
+.notice{display:none;padding:12px 14px;border-radius:9px;font-size:13px;margin-bottom:16px;}
+.notice.err{background:#FDEAE0;color:#B5451A;}
+.notice.ok{background:#E6F7EF;color:#0E7A46;}
+
+.success{display:none;text-align:center;padding:20px 4px;}
+.success .tick{width:52px;height:52px;border-radius:50%;background:#E6F7EF;color:var(--green);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px;}
+.success h3{font-size:17px;margin-bottom:8px;}
+.success p{color:var(--gray);font-size:13.5px;line-height:1.6;}
+
+.note{text-align:center;color:var(--gray);font-size:12px;margin-top:16px;line-height:1.6;}
+
+footer{text-align:center;padding:26px;color:var(--gray);font-size:11.5px;}
+
+@media(max-width:520px){ .grid{grid-template-columns:1fr;} .card{padding:20px;} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <svg width="30" height="30" viewBox="0 0 100 100">
+      <circle cx="38" cy="50" r="30" fill="#0A0A0A"/>
+      <circle cx="62" cy="50" r="30" fill="#1CA6E0"/>
+      <path d="M8 58 Q40 40 92 32" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="10 8"/>
+    </svg>
+    <div><b>Kefko Travel Agent</b><span>Let's Fly Together</span></div>
+  </div>
+</header>
+
+<div class="headline">
+  <h1>Book Your Flight</h1>
+  <p>Tell us where you're headed — one of our agents will confirm your fare, seats, and payment details personally.</p>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <div id="formView">
+      <h2>Request a Booking</h2>
+      <div class="sub">No payment needed yet — we'll contact you to confirm everything first.</div>
+      <div class="notice" id="notice"></div>
+
+      <div class="grid">
+        <div class="field full"><label>Full Name *</label><input type="text" id="f_name" placeholder="Your full name"></div>
+        <div class="field"><label>Phone Number *</label><input type="tel" id="f_phone" placeholder="09xxxxxxxx"></div>
+        <div class="field"><label>Email (optional)</label><input type="email" id="f_email" placeholder="you@email.com"></div>
+        <div class="field"><label>From</label><input type="text" id="f_origin" placeholder="e.g. Addis Ababa (ADD)"></div>
+        <div class="field"><label>To</label><input type="text" id="f_destination" placeholder="e.g. Dubai (DXB)"></div>
+        <div class="field"><label>Travel Date</label><input type="date" id="f_date"></div>
+        <div class="field"><label>Passengers</label><input type="number" id="f_pax" min="1" value="1"></div>
+        <div class="field full"><label>Notes (optional)</label><textarea id="f_notes" placeholder="Preferred airline, class, special requests..."></textarea></div>
+      </div>
+
+      <button class="btn" id="submitBtn" onclick="submitRequest()">Send Booking Request</button>
+      <div class="note">By submitting, an agent from Kefko Travel Agent will reach out to confirm your booking and arrange payment.</div>
+    </div>
+
+    <div class="success" id="successView">
+      <div class="tick">✓</div>
+      <h3>Request received!</h3>
+      <p>Thanks — one of our agents will contact you shortly by phone or email to confirm your flight details and payment.</p>
+    </div>
+  </div>
+</div>
+
+<footer>Kefko Travel Agent — Let's Fly Together</footer>
+
+<script>
+async function submitRequest(){
+  const notice=document.getElementById('notice');
+  notice.style.display='none';
+  const name=document.getElementById('f_name').value.trim();
+  const phone=document.getElementById('f_phone').value.trim();
+  if(!name || !phone){
+    notice.className='notice err';
+    notice.textContent='Please fill in your name and phone number.';
+    notice.style.display='block';
+    return;
+  }
+  const btn=document.getElementById('submitBtn');
+  btn.disabled=true; btn.textContent='Sending...';
+  try{
+    const res = await fetch('/api/public/booking-request',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        name, phone,
+        email: document.getElementById('f_email').value.trim(),
+        origin: document.getElementById('f_origin').value.trim(),
+        destination: document.getElementById('f_destination').value.trim(),
+        travel_date: document.getElementById('f_date').value,
+        passengers: +document.getElementById('f_pax').value || 1,
+        notes: document.getElementById('f_notes').value.trim()
+      })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error||'Something went wrong, please try again.');
+    document.getElementById('formView').style.display='none';
+    document.getElementById('successView').style.display='block';
+  }catch(e){
+    notice.className='notice err';
+    notice.textContent=e.message;
+    notice.style.display='block';
+    btn.disabled=false; btn.textContent='Send Booking Request';
+  }
+}
+</script>
+</body>
+</html>

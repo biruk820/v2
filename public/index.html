@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kefko Travel Agent — Business System</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+  --blue:#1CA6E0;
+  --blue-dark:#0E7FB3;
+  --blue-pale:#EAF7FD;
+  --ink:#12161C;
+  --gray:#6B7480;
+  --line:#E7ECF1;
+  --white:#FFFFFF;
+  --bg:#F5F8FA;
+  --green:#1FAE6A;
+  --red:#E0521C;
+  --amber:#E0A81C;
+  --radius:12px;
+  --shadow:0 1px 2px rgba(18,22,28,.04),0 4px 16px rgba(18,22,28,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  display:flex;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+h1,h2,h3,.brand,.navlabel,.kpi-value{font-family:'Poppins',-apple-system,sans-serif;}
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+/* ---------- Auth overlay (official portal style) ---------- */
+#authOverlay{
+  position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;
+  background:
+    linear-gradient(180deg, rgba(6,20,38,.92) 0%, rgba(6,20,38,.85) 100%),
+    radial-gradient(circle at 20% 20%, rgba(28,166,224,.25), transparent 45%),
+    #0B2138;
+}
+.authtopbar{
+  width:100%;background:#08192B;border-bottom:3px solid #C9A227;
+  padding:10px 22px;display:flex;align-items:center;gap:10px;
+  color:#E8EEF4;font-size:12px;font-weight:600;letter-spacing:.03em;
+}
+.authtopbar .dot{width:6px;height:6px;border-radius:50%;background:#1CA6E0;}
+.authwrap{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;}
+.authbox{
+  background:#fff;border-radius:6px;padding:36px 34px 30px;width:380px;
+  box-shadow:0 18px 50px rgba(0,0,0,.35);
+  border-top:4px solid #0E3A5F;position:relative;
+}
+.authseal{
+  width:56px;height:56px;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;
+  border:2px solid #C9A227;border-radius:50%;background:#fff;
+}
+.authbrand{display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:6px;text-align:center;}
+.authbrand b{font-family:'Poppins';font-size:17px;letter-spacing:.02em;color:#0E3A5F;}
+.authbrand .authsub{font-size:10.5px;color:#8A94A3;text-transform:uppercase;letter-spacing:.12em;font-weight:700;}
+.authbrand span{font-size:11.5px;color:var(--gray);margin-top:2px;}
+.authdivider{height:1px;background:linear-gradient(90deg,transparent,#C9A227,transparent);margin:16px 0 20px;}
+.autherr{color:var(--red);font-size:12.5px;margin-bottom:10px;display:none;background:#FDEAE0;padding:8px 10px;border-radius:6px;border-left:3px solid var(--red);}
+.autherr.authnotice{color:#0E7A46;background:#E6F7EF;border-left-color:#1FAE6A;}
+.authfield{margin-bottom:14px;}
+.authfield label{font-size:10.5px;font-weight:700;color:#0E3A5F;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em;}
+.authfield input,.authfield select{width:100%;padding:10px 12px;border:1px solid #C7D0DA;border-radius:5px;font-size:13.5px;background:#FAFBFC;}
+.authfield input:focus,.authfield select:focus{outline:none;border-color:#0E3A5F;background:#fff;}
+.authfoot{text-align:center;font-size:10.5px;color:#8A94A3;margin-top:18px;line-height:1.5;}
+.toggle.authtoggle{background:#EEF1F4;margin-bottom:18px;}
+.toggle.authtoggle button.active{background:#0E3A5F;color:#fff;box-shadow:none;}
+
+/* ---------- Sidebar ---------- */
+.sidebar{
+  width:236px;background:var(--white);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;padding:20px 14px;
+  position:fixed;top:0;left:0;bottom:0;z-index:50;transition:transform .25s ease;
+}
+.brand{display:flex;align-items:center;gap:10px;padding:6px 8px 22px;}
+.brand-text{line-height:1.15;}
+.brand-text b{font-size:15px;font-weight:700;color:var(--ink);display:block;}
+.brand-text span{font-size:10.5px;color:var(--gray);font-weight:500;}
+.navgroup{margin-top:6px;}
+.navlabel{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--gray);font-weight:600;padding:14px 10px 6px;}
+.navitem{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:9px;color:#3C4450;font-size:13.5px;font-weight:500;cursor:pointer;user-select:none;transition:background .15s,color .15s;margin-bottom:2px;}
+.navitem svg{width:17px;height:17px;flex-shrink:0;opacity:.75;}
+.navitem:hover{background:var(--blue-pale);color:var(--blue-dark);}
+.navitem.active{background:var(--blue);color:#fff;}
+.navitem.active svg{opacity:1;}
+.sidebar-foot{margin-top:auto;padding:12px 10px;font-size:11px;color:var(--gray);border-top:1px solid var(--line);}
+
+/* ---------- Main ---------- */
+.main{margin-left:236px;flex:1;min-width:0;display:flex;flex-direction:column;}
+.topbar{height:62px;background:var(--white);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:40;}
+.topbar h1{font-size:17px;font-weight:600;}
+.topbar .sub{font-size:12px;color:var(--gray);font-weight:500;margin-top:1px;}
+.menubtn{display:none;background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink);}
+.topbar-right{display:flex;align-items:center;gap:14px;}
+.datepill{font-size:12px;color:var(--gray);background:var(--bg);padding:6px 12px;border-radius:20px;font-weight:500;}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--blue-pale);color:var(--blue-dark);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer;}
+.userbox{position:relative;}
+.usermenu{display:none;position:absolute;right:0;top:40px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);width:180px;overflow:hidden;z-index:60;}
+.usermenu.open{display:block;}
+.usermenu .uname{padding:10px 12px;font-size:12.5px;font-weight:600;border-bottom:1px solid var(--line);}
+.usermenu .uemail{padding:0 12px 8px;font-size:11px;color:var(--gray);border-bottom:1px solid var(--line);}
+.usermenu button{width:100%;text-align:left;background:none;border:none;padding:9px 12px;font-size:12.5px;cursor:pointer;color:var(--red);font-weight:600;}
+.usermenu button:hover{background:var(--bg);}
+
+.view{display:none;padding:22px 24px 40px;flex:1;}
+.view.active{display:block;}
+#view-dashboard.active{display:flex;flex-direction:column;height:calc(100vh - 62px);overflow:hidden;padding-bottom:16px;}
+
+.kpirow{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:16px;}
+.kpi{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;box-shadow:var(--shadow);}
+.kpi .lbl{font-size:11.5px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
+.kpi .kpi-value{font-size:21px;font-weight:700;margin-top:6px;}
+
+.dashgrid{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;flex:1;min-height:0;}
+.card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:0;}
+.card h3{font-size:13.5px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.card h3 span{font-size:11px;color:var(--gray);font-weight:500;}
+.dashcol{display:flex;flex-direction:column;gap:14px;min-height:0;}
+
+.listrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px;}
+.listrow:last-child{border-bottom:none;}
+.listrow .name{font-weight:600;}
+.listrow .meta{color:var(--gray);font-size:11px;}
+.badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;}
+.badge.green{background:#E6F7EF;color:var(--green);}
+.badge.amber{background:#FCF3E1;color:var(--amber);}
+.badge.red{background:#FDEAE0;color:var(--red);}
+
+.pagehead{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.pagehead h2{font-size:19px;font-weight:600;}
+.pagehead .sub{font-size:12.5px;color:var(--gray);margin-top:2px;}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+.search{position:relative;}
+.search input{padding:8px 12px 8px 32px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:230px;background:#fff;}
+.search::before{content:'🔍';position:absolute;left:10px;top:8px;font-size:12px;opacity:.5;}
+.toggle{display:flex;background:var(--bg);border-radius:8px;padding:3px;}
+.toggle button{border:none;background:none;padding:6px 13px;font-size:12.5px;font-weight:600;color:var(--gray);border-radius:6px;cursor:pointer;}
+.toggle button.active{background:#fff;color:var(--blue-dark);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.btn{background:var(--blue);color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;}
+.btn:hover{background:var(--blue-dark);}
+.btn.ghost{background:#fff;color:var(--blue-dark);border:1px solid var(--blue);}
+.btn.wide{width:100%;}
+
+.formcard{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:18px;box-shadow:var(--shadow);display:none;}
+.formcard.open{display:block;}
+.formgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:14px;}
+.field label{font-size:11px;font-weight:600;color:var(--gray);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.02em;}
+.field input,.field select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font-size:13px;background:#fff;}
+.field input:disabled{background:var(--bg);color:var(--gray);}
+.formactions{display:flex;gap:10px;}
+
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--gray);font-weight:700;background:var(--bg);padding:10px 12px;border-bottom:1px solid var(--line);}
+tbody td{padding:10px 12px;font-size:13px;border-bottom:1px solid var(--line);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:#FAFCFD;}
+.rowactions{display:flex;gap:6px;}
+.iconbtn{background:none;border:none;cursor:pointer;font-size:13px;padding:3px 5px;border-radius:5px;color:var(--gray);}
+.iconbtn:hover{background:var(--blue-pale);color:var(--blue-dark);}
+.empty{text-align:center;padding:40px 20px;color:var(--gray);font-size:13px;}
+.tablewrap{overflow-x:auto;}
+
+/* ---------- Sidebar backdrop (mobile only) ---------- */
+#sidebarBackdrop{display:none;position:fixed;inset:0;background:rgba(18,22,28,.4);z-index:45;}
+#sidebarBackdrop.open{display:block;}
+
+@media(max-width:960px){
+  .sidebar{width:78vw;max-width:300px;transform:translateX(-100%);box-shadow:0 0 0 rgba(0,0,0,0);}
+  .sidebar.open{transform:translateX(0);box-shadow:8px 0 24px rgba(18,22,28,.15);}
+  .main{margin-left:0;}
+  .menubtn{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:8px;}
+  .menubtn:active{background:var(--bg);}
+  .topbar{padding:0 14px;height:56px;}
+  .topbar h1{font-size:15.5px;}
+  .topbar .sub{display:none;}
+  .datepill{display:none;}
+  .kpirow{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .kpi{padding:12px 13px;}
+  .kpi .kpi-value{font-size:18px;}
+  .dashgrid{grid-template-columns:1fr;}
+  #view-dashboard.active{height:auto;overflow:visible;}
+  .view{padding:16px 14px 32px;}
+  .pagehead{gap:12px;}
+  .pagehead h2{font-size:17px;}
+  .pagehead .btn{width:100%;}
+  .formgrid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
+  .formcard{padding:14px;}
+  .formactions{flex-direction:column;}
+  .formactions .btn{width:100%;}
+  .toolbar{gap:8px;}
+  .search{width:100%;}
+  .search input{width:100%;}
+  .toggle{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
+  .toggle button{flex-shrink:0;padding:7px 12px;}
+  table{min-width:640px;}
+  .tablewrap{-webkit-overflow-scrolling:touch;}
+  .navitem{padding:11px 12px;font-size:14px;}
+  .authbox{width:calc(100vw - 40px);max-width:340px;padding:24px;}
+  .usermenu{right:-6px;}
+}
+
+@media(max-width:480px){
+  .kpirow{grid-template-columns:1fr 1fr;}
+  .kpi .kpi-value{font-size:16.5px;}
+  .repKpiRow, #repKpiRow{grid-template-columns:1fr 1fr!important;}
+  .toolbar .toggle{width:100%;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH SCREEN ============ -->
+<div id="authOverlay">
+  <div class="authtopbar">
+    <span class="dot"></span> Kefko Travel Agent — Staff Portal · Secure Login
+  </div>
+  <div class="authwrap">
+  <div class="authbox">
+    <div class="authseal">
+      <svg width="30" height="30" viewBox="0 0 100 100">
+        <circle cx="38" cy="50" r="30" fill="#0A0A0A"/>
+        <circle cx="62" cy="50" r="30" fill="#1CA6E0"/>
+        <path d="M8 58 Q40 40 92 32" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="10 8"/>
+      </svg>
+    </div>
+    <div class="authbrand">
+      <div class="authsub">Official Staff Access</div>
+      <b>Kefko Travel Agent</b>
+      <span>Let's Fly Together</span>
+    </div>
+    <div class="authdivider"></div>
+    <div class="toggle authtoggle" style="margin-bottom:18px;">
+      <button id="authTabLogin" class="active" onclick="switchAuthTab('login')">Log In</button>
+      <button id="authTabRegister" onclick="switchAuthTab('register')">Register</button>
+    </div>
+    <div class="autherr" id="authError"></div>
+    <div class="authfield" id="authNameField" style="display:none;"><label>Full Name</label><input id="auth_name" type="text" placeholder="Staff member name"></div>
+    <div class="authfield" id="authRoleField" style="display:none;">
+      <label>Department</label>
+      <select id="auth_role">
+        <option value="agent">Sales Agent</option>
+        <option value="accountant">Accountant</option>
+        <option value="hr">Human Resources</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div class="authfield"><label>Email</label><input id="auth_email" type="email" placeholder="you@kefko.com"></div>
+    <div class="authfield" style="margin-bottom:18px;"><label>Password</label><input id="auth_password" type="password" placeholder="••••••••"></div>
+    <button class="btn wide" onclick="submitAuth()" id="authSubmitBtn">Log In</button>
+    <div class="authfoot">Authorized personnel only. All activity on this system is logged.<br>© Kefko Travel Agent Business System</div>
+  </div>
+  </div>
+</div>
+
+<div id="sidebarBackdrop" onclick="closeSidebar()"></div>
+<nav class="sidebar" id="sidebar">
+  <div class="brand">
+    <svg width="34" height="34" viewBox="0 0 100 100" style="flex-shrink:0;">
+      <circle cx="38" cy="50" r="30" fill="#0A0A0A"/>
+      <circle cx="62" cy="50" r="30" fill="#1CA6E0"/>
+      <path d="M8 58 Q40 40 92 32" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="10 8"/>
+    </svg>
+    <div class="brand-text"><b>Kefko Travel</b><span>Let's Fly Together</span></div>
+  </div>
+  <div class="navgroup">
+    <div class="navlabel">Overview</div>
+    <div class="navitem active" data-view="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</div>
+  </div>
+  <div class="navgroup">
+    <div class="navlabel">Operations</div>
+    <div class="navitem" data-view="bookingrequests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Booking Requests</div>
+    <div class="navitem" data-view="sales"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l4-7h10l4 7"/><path d="M3 12v7a1 1 0 001 1h16a1 1 0 001-1v-7"/><path d="M9 21v-6h6v6"/></svg>Sales & Bookings</div>
+    <div class="navitem" data-view="customers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>Customers</div>
+    <div class="navitem" data-view="inventory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>Ticket Inventory</div>
+  </div>
+  <div class="navgroup">
+    <div class="navlabel">Finance</div>
+    <div class="navitem" data-view="expenses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>Expenses</div>
+    <div class="navitem" data-view="payroll"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 4v3M16 4v3"/><path d="M7 12h10M7 16h6"/></svg>Payroll</div>
+    <div class="navitem" data-view="bank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-6 9 6"/><path d="M5 10v9M19 10v9M9 10v9M15 10v9"/><path d="M3 19h18"/></svg>Bank Statement</div>
+    <div class="navitem" data-view="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5a2 2 0 012-2h9l5 5v11a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><path d="M8 13h8M8 17h5"/></svg>Reports</div>
+  </div>
+  <div class="navgroup" id="adminNavGroup" style="display:none;">
+    <div class="navlabel">Admin</div>
+    <div class="navitem" data-view="team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="3"/><path d="M2 21c0-3.9 3.1-7 7-7s7 3.1 7 7"/><circle cx="17" cy="7" r="3"/><path d="M23 21c0-3.2-2-6-5-6.8"/></svg>Team</div>
+  </div>
+  <div class="sidebar-foot">Kefko Business System v2.0<br>Each staff login keeps its own records</div>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="menubtn" onclick="openSidebar()">☰</button>
+      <div>
+        <h1 id="pageTitle">Dashboard</h1>
+        <div class="sub" id="pageSub">Overview of your agency's performance</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="datepill" id="todayPill"></div>
+      <div class="userbox">
+        <div class="avatar" id="avatarBtn" onclick="document.getElementById('userMenu').classList.toggle('open')">KF</div>
+        <div class="usermenu" id="userMenu">
+          <div class="uname" id="menuName">—</div>
+          <div class="uemail" id="menuEmail">—</div>
+          <button onclick="logout()">Log Out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="view active" id="view-dashboard">
+    <div class="kpirow" id="kpiRow"></div>
+    <div class="dashgrid">
+      <div class="card">
+        <h3>Sales Trend (Last 14 Days) <span id="salesTrendTotal"></span></h3>
+        <svg id="trendChart" viewBox="0 0 560 190" style="width:100%;flex:1;"></svg>
+      </div>
+      <div class="dashcol">
+        <div class="card" style="flex:1;">
+          <h3>New Booking Requests <span id="brPendingCount"></span></h3>
+          <div id="dashBookingRequests"></div>
+        </div>
+        <div class="card" style="flex:1;">
+          <h3>Recent Sales <span>Latest 5</span></h3>
+          <div id="recentSales"></div>
+        </div>
+        <div class="card" style="flex:1;">
+          <h3>Low Ticket Inventory <span>Needs attention</span></h3>
+          <div id="lowInventory"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOOKING REQUESTS -->
+  <div class="view" id="view-bookingrequests">
+    <div class="pagehead">
+      <div><h2>Booking Requests</h2><div class="sub">Customer requests submitted from your website — confirm and turn them into sales</div></div>
+      <a class="btn ghost" href="/book" target="_blank" style="text-decoration:none;">↗ View Public Booking Page</a>
+    </div>
+    <div class="toolbar">
+      <div class="toggle" id="br_period">
+        <button class="active" data-p="All" onclick="setBRFilter('All')">All</button>
+        <button data-p="Pending" onclick="setBRFilter('Pending')">Pending</button>
+        <button data-p="Contacted" onclick="setBRFilter('Contacted')">Contacted</button>
+        <button data-p="Confirmed" onclick="setBRFilter('Confirmed')">Confirmed</button>
+        <button data-p="Rejected" onclick="setBRFilter('Rejected')">Rejected</button>
+      </div>
+    </div>
+    <div class="tablewrap"><table><thead><tr><th>Received</th><th>Name</th><th>Contact</th><th>Route</th><th>Travel Date</th><th>Pax</th><th>Notes</th><th>Status</th><th></th></tr></thead><tbody id="brBody"></tbody></table></div>
+  </div>
+
+  <!-- SALES -->
+  <div class="view" id="view-sales">
+    <div class="pagehead">
+      <div><h2>Sales & Bookings</h2><div class="sub">Log ticket sales and track commission</div></div>
+      <button class="btn" onclick="toggleForm('sales')">+ New Sale</button>
+    </div>
+    <div class="formcard" id="form-sales">
+      <div class="formgrid">
+        <div class="field"><label>Date</label><input type="date" id="sales_date"></div>
+        <div class="field"><label>Passenger</label><input type="text" id="sales_passenger" placeholder="Full name"></div>
+        <div class="field"><label>Airline</label><input type="text" id="sales_airline" placeholder="e.g. Ethiopian Airlines"></div>
+        <div class="field"><label>Route</label><input type="text" id="sales_route" placeholder="ADD–DXB"></div>
+        <div class="field"><label>Ticket No.</label><input type="text" id="sales_ticket"></div>
+        <div class="field"><label>Sale Value (ETB)</label><input type="number" id="sales_value" oninput="calcSale()"></div>
+        <div class="field"><label>Partner Commission (ETB)</label><input type="number" id="sales_partcomm" oninput="calcSale()"></div>
+        <div class="field"><label>Subtotal (ETB)</label><input type="number" id="sales_subtotal" disabled></div>
+        <div class="field"><label>Agency Commission %</label><input type="number" id="sales_commpct" oninput="calcSale()"></div>
+        <div class="field"><label>Total (ETB)</label><input type="number" id="sales_total" disabled></div>
+        <div class="field"><label>Payment Status</label><select id="sales_status"><option>Paid</option><option>Pending</option><option>Partial</option></select></div>
+      </div>
+      <div class="formactions"><button class="btn" onclick="saveSale()">Save Sale</button><button class="btn ghost" onclick="toggleForm('sales')">Cancel</button></div>
+    </div>
+    <div class="toolbar">
+      <div class="search"><input type="text" id="sales_search" placeholder="Search passenger, route, ticket..." oninput="renderSales()"></div>
+      <div class="toggle" id="sales_period">
+        <button class="active" data-p="all" onclick="setPeriod('sales','all')">All</button>
+        <button data-p="daily" onclick="setPeriod('sales','daily')">Daily</button>
+        <button data-p="weekly" onclick="setPeriod('sales','weekly')">Weekly</button>
+        <button data-p="monthly" onclick="setPeriod('sales','monthly')">Monthly</button>
+        <button data-p="yearly" onclick="setPeriod('sales','yearly')">Yearly</button>
+      </div>
+    </div>
+    <div class="tablewrap"><table><thead><tr><th>Date</th><th>Passenger</th><th>Airline</th><th>Route</th><th>Ticket No.</th><th>Sale Value</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody id="salesBody"></tbody></table></div>
+  </div>
+
+  <!-- CUSTOMERS -->
+  <div class="view" id="view-customers">
+    <div class="pagehead">
+      <div><h2>Customers</h2><div class="sub">Your client relationships and booking history</div></div>
+      <button class="btn" onclick="toggleForm('customers')">+ New Customer</button>
+    </div>
+    <div class="formcard" id="form-customers">
+      <div class="formgrid">
+        <div class="field"><label>Full Name</label><input type="text" id="cust_name"></div>
+        <div class="field"><label>Phone</label><input type="text" id="cust_phone"></div>
+        <div class="field"><label>Email</label><input type="text" id="cust_email"></div>
+        <div class="field"><label>Company</label><input type="text" id="cust_company"></div>
+        <div class="field"><label>Notes</label><input type="text" id="cust_notes"></div>
+      </div>
+      <div class="formactions"><button class="btn" onclick="saveCustomer()">Save Customer</button><button class="btn ghost" onclick="toggleForm('customers')">Cancel</button></div>
+    </div>
+    <div class="toolbar"><div class="search"><input type="text" id="cust_search" placeholder="Search name, phone, company..." oninput="renderCustomers()"></div></div>
+    <div class="tablewrap"><table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Company</th><th>Bookings</th><th>Total Spend</th><th></th></tr></thead><tbody id="custBody"></tbody></table></div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div class="view" id="view-inventory">
+    <div class="pagehead">
+      <div><h2>Ticket Inventory</h2><div class="sub">Airline allotments and remaining stock</div></div>
+      <button class="btn" onclick="toggleForm('inventory')">+ New Allotment</button>
+    </div>
+    <div class="formcard" id="form-inventory">
+      <div class="formgrid">
+        <div class="field"><label>Airline</label><input type="text" id="inv_airline"></div>
+        <div class="field"><label>Route</label><input type="text" id="inv_route"></div>
+        <div class="field"><label>Allotment (seats)</label><input type="number" id="inv_alloc" oninput="calcInv()"></div>
+        <div class="field"><label>Used</label><input type="number" id="inv_used" oninput="calcInv()"></div>
+        <div class="field"><label>Remaining</label><input type="number" id="inv_remaining" disabled></div>
+        <div class="field"><label>Validity Date</label><input type="date" id="inv_validity"></div>
+      </div>
+      <div class="formactions"><button class="btn" onclick="saveInventory()">Save Allotment</button><button class="btn ghost" onclick="toggleForm('inventory')">Cancel</button></div>
+    </div>
+    <div class="toolbar"><div class="search"><input type="text" id="inv_search" placeholder="Search airline, route..." oninput="renderInventory()"></div></div>
+    <div class="tablewrap"><table><thead><tr><th>Airline</th><th>Route</th><th>Allotment</th><th>Used</th><th>Remaining</th><th>Validity</th><th></th></tr></thead><tbody id="invBody"></tbody></table></div>
+  </div>
+
+  <!-- EXPENSES -->
+  <div class="view" id="view-expenses">
+    <div class="pagehead">
+      <div><h2>Expenses</h2><div class="sub">Office and operational costs</div></div>
+      <button class="btn" onclick="toggleForm('expenses')">+ New Expense</button>
+    </div>
+    <div class="formcard" id="form-expenses">
+      <div class="formgrid">
+        <div class="field"><label>Date</label><input type="date" id="exp_date"></div>
+        <div class="field"><label>Category</label><select id="exp_category"><option>Rent</option><option>Utilities</option><option>Supplies</option><option>Marketing</option><option>Transport</option><option>Other</option></select></div>
+        <div class="field"><label>Description</label><input type="text" id="exp_desc"></div>
+        <div class="field"><label>Amount (ETB)</label><input type="number" id="exp_amount"></div>
+        <div class="field"><label>Paid By</label><input type="text" id="exp_paidby"></div>
+      </div>
+      <div class="formactions"><button class="btn" onclick="saveExpense()">Save Expense</button><button class="btn ghost" onclick="toggleForm('expenses')">Cancel</button></div>
+    </div>
+    <div class="toolbar"><div class="search"><input type="text" id="exp_search" placeholder="Search description, category..." oninput="renderExpenses()"></div></div>
+    <div class="tablewrap"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Paid By</th><th></th></tr></thead><tbody id="expBody"></tbody></table></div>
+  </div>
+
+  <!-- PAYROLL -->
+  <div class="view" id="view-payroll">
+    <div class="pagehead">
+      <div><h2>Payroll</h2><div class="sub">Staff salaries and deductions</div></div>
+      <button class="btn" onclick="toggleForm('payroll')">+ New Entry</button>
+    </div>
+    <div class="formcard" id="form-payroll">
+      <div class="formgrid">
+        <div class="field"><label>Month</label><input type="month" id="pay_month"></div>
+        <div class="field"><label>Employee</label><input type="text" id="pay_employee"></div>
+        <div class="field"><label>Base Salary (ETB)</label><input type="number" id="pay_base" oninput="calcPay()"></div>
+        <div class="field"><label>Allowance (ETB)</label><input type="number" id="pay_allow" oninput="calcPay()"></div>
+        <div class="field"><label>Deductions (ETB)</label><input type="number" id="pay_deduct" oninput="calcPay()"></div>
+        <div class="field"><label>Net Pay (ETB)</label><input type="number" id="pay_net" disabled></div>
+      </div>
+      <div class="formactions"><button class="btn" onclick="savePayroll()">Save Entry</button><button class="btn ghost" onclick="toggleForm('payroll')">Cancel</button></div>
+    </div>
+    <div class="toolbar"><div class="search"><input type="text" id="pay_search" placeholder="Search employee..." oninput="renderPayroll()"></div></div>
+    <div class="tablewrap"><table><thead><tr><th>Month</th><th>Employee</th><th>Base</th><th>Allowance</th><th>Deductions</th><th>Net Pay</th><th></th></tr></thead><tbody id="payBody"></tbody></table></div>
+  </div>
+
+  <!-- BANK -->
+  <div class="view" id="view-bank">
+    <div class="pagehead">
+      <div><h2>Bank Statement</h2><div class="sub">Reconcile agency bank activity</div></div>
+      <button class="btn" onclick="toggleForm('bank')">+ New Entry</button>
+    </div>
+    <div class="formcard" id="form-bank">
+      <div class="formgrid">
+        <div class="field"><label>Date</label><input type="date" id="bank_date"></div>
+        <div class="field"><label>Description</label><input type="text" id="bank_desc"></div>
+        <div class="field"><label>Bank</label><input type="text" id="bank_bank"></div>
+        <div class="field"><label>Amount (ETB)</label><input type="number" id="bank_amount"></div>
+        <div class="field"><label>Bank Reference</label><input type="text" id="bank_ref"></div>
+      </div>
+      <div class="formactions"><button class="btn" onclick="saveBank()">Save Entry</button><button class="btn ghost" onclick="toggleForm('bank')">Cancel</button></div>
+    </div>
+    <div class="toolbar"><div class="search"><input type="text" id="bank_search" placeholder="Search description, reference..." oninput="renderBank()"></div></div>
+    <div class="tablewrap"><table><thead><tr><th>Date</th><th>Description</th><th>Bank</th><th>Amount</th><th>Reference</th><th></th></tr></thead><tbody id="bankBody"></tbody></table></div>
+  </div>
+
+  <!-- REPORTS -->
+  <div class="view" id="view-reports">
+    <div class="pagehead">
+      <div><h2>Reports</h2><div class="sub">Summaries you can download or email</div></div>
+    </div>
+    <div class="toolbar">
+      <div class="toggle" id="rep_period">
+        <button class="active" data-p="daily" onclick="setPeriod('rep','daily')">Daily</button>
+        <button data-p="weekly" onclick="setPeriod('rep','weekly')">Weekly</button>
+        <button data-p="monthly" onclick="setPeriod('rep','monthly')">Monthly</button>
+        <button data-p="yearly" onclick="setPeriod('rep','yearly')">Yearly</button>
+      </div>
+      <button class="btn ghost" onclick="downloadReportCSV()">⬇ Download CSV</button>
+      <button class="btn ghost" onclick="emailReport()">✉ Email Summary</button>
+    </div>
+    <div class="kpirow" id="repKpiRow" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px;"></div>
+    <div class="card">
+      <h3>Sales in Period <span id="repCount"></span></h3>
+      <div class="tablewrap"><table><thead><tr><th>Date</th><th>Passenger</th><th>Route</th><th>Sale Value</th><th>Total</th><th>Status</th></tr></thead><tbody id="repBody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- TEAM (admin only) -->
+  <div class="view" id="view-team">
+    <div class="pagehead">
+      <div><h2>Team</h2><div class="sub">Everyone registered, by department</div></div>
+    </div>
+    <div class="tablewrap"><table><thead><tr><th>Name</th><th>Email</th><th>Department</th><th>Joined</th></tr></thead><tbody id="teamBody"></tbody></table></div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- Role-based access ---------------- */
+const PERMISSIONS = {
+  bookingrequests: { read:['admin','agent'],               write:['admin','agent'] },
+  sales:     { read:['admin','agent','accountant'], write:['admin','agent'] },
+  customers: { read:['admin','agent'],               write:['admin','agent'] },
+  inventory: { read:['admin','agent'],               write:['admin','agent'] },
+  expenses:  { read:['admin','accountant'],          write:['admin','accountant'] },
+  payroll:   { read:['admin','hr'],                  write:['admin','hr'] },
+  bank:      { read:['admin','accountant'],          write:['admin','accountant'] },
+};
+let currentRole='agent';
+function canRead(table){ return PERMISSIONS[table].read.includes(currentRole); }
+function canWrite(table){ return PERMISSIONS[table].write.includes(currentRole); }
+function applyRoleUI(){
+  document.querySelectorAll('.navitem[data-view]').forEach(el=>{
+    const v=el.dataset.view;
+    if(v==='dashboard'||v==='reports'||v==='team'){return;}
+    el.style.display = canRead(v) ? '' : 'none';
+  });
+  document.getElementById('adminNavGroup').style.display = currentRole==='admin' ? '' : 'none';
+  ['sales','customers','inventory','expenses','payroll','bank'].forEach(t=>{
+    const addBtn=document.querySelector(`#view-${t} .pagehead .btn`);
+    if(addBtn) addBtn.style.display = canWrite(t) ? '' : 'none';
+  });
+  // If the currently active view isn't readable by this role, fall back to dashboard
+  const activeItem=document.querySelector('.navitem.active');
+  if(activeItem && activeItem.dataset.view!=='dashboard' && activeItem.dataset.view!=='reports' && activeItem.dataset.view!=='team' && !canRead(activeItem.dataset.view)){
+    document.querySelector('.navitem[data-view="dashboard"]').click();
+  }
+}
+async function renderTeam(){
+  if(currentRole!=='admin')return;
+  const rows = await api('/api/team');
+  const body=document.getElementById('teamBody');
+  if(!rows){return;}
+  body.innerHTML = rows.length? rows.map(r=>`<tr><td><b>${r.name}</b></td><td>${r.email}</td><td>${r.roleLabel}</td><td>${(r.created_at||'').slice(0,10)}</td></tr>`).join('')
+    : `<tr><td colspan="4" class="empty">No staff registered yet.</td></tr>`;
+}
+
+/* ---------------- API helper ---------------- */
+async function api(path, opts={}){
+  const token = localStorage.getItem('kefko_token');
+  const res = await fetch(path, {...opts, headers:{'Content-Type':'application/json', ...(token?{'Authorization':'Bearer '+token}:{}), ...(opts.headers||{})}});
+  if(res.status===401){ localStorage.removeItem('kefko_token'); showAuth(); return null; }
+  return res.json();
+}
+
+/* ---------------- Auth ---------------- */
+let authMode='login';
+function switchAuthTab(mode){
+  authMode=mode;
+  document.getElementById('authTabLogin').classList.toggle('active',mode==='login');
+  document.getElementById('authTabRegister').classList.toggle('active',mode==='register');
+  document.getElementById('authNameField').style.display = mode==='register'?'block':'none';
+  document.getElementById('authRoleField').style.display = mode==='register'?'block':'none';
+  document.getElementById('authSubmitBtn').textContent = mode==='login'?'Log In':'Create Account';
+  document.getElementById('authError').style.display='none';
+  document.getElementById('authError').classList.remove('authnotice');
+}
+function showAuth(){ document.getElementById('authOverlay').style.display='flex'; }
+function hideAuth(){ document.getElementById('authOverlay').style.display='none'; }
+function initials(name){return (name||'').trim().split(/\s+/).map(n=>n[0]).slice(0,2).join('').toUpperCase()||'KF';}
+
+async function submitAuth(){
+  const email=document.getElementById('auth_email').value.trim();
+  const password=document.getElementById('auth_password').value;
+  const name=document.getElementById('auth_name').value.trim();
+  const role=document.getElementById('auth_role').value;
+  const errEl=document.getElementById('authError');
+  errEl.style.display='none';
+  errEl.classList.remove('authnotice');
+  if(!email||!password||(authMode==='register'&&!name)){errEl.textContent='Please fill in all fields.';errEl.style.display='block';return;}
+  try{
+    const res = await fetch(`/api/auth/${authMode}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password,role})});
+    const data = await res.json();
+    if(!res.ok){
+      if(data.unverified){
+        errEl.innerHTML = `${data.error} <button type="button" onclick="resendVerification()" style="background:none;border:none;color:#0E3A5F;font-weight:700;text-decoration:underline;cursor:pointer;padding:0;font-size:inherit;">Resend link</button>`;
+        errEl.style.display='block';
+        return;
+      }
+      throw new Error(data.error||'Something went wrong');
+    }
+    if(data.pending){
+      errEl.classList.add('authnotice');
+      errEl.textContent = data.message;
+      errEl.style.display='block';
+      return;
+    }
+    localStorage.setItem('kefko_token', data.token);
+    localStorage.setItem('kefko_user', JSON.stringify(data.user));
+    onLoggedIn(data.user);
+  }catch(e){
+    errEl.textContent=e.message;
+    errEl.style.display='block';
+  }
+}
+async function resendVerification(){
+  const email=document.getElementById('auth_email').value.trim();
+  const errEl=document.getElementById('authError');
+  try{
+    const res = await fetch('/api/auth/resend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error||'Could not resend the link');
+    errEl.classList.add('authnotice');
+    errEl.textContent=data.message;
+    errEl.style.display='block';
+  }catch(e){
+    errEl.classList.remove('authnotice');
+    errEl.textContent=e.message;
+    errEl.style.display='block';
+  }
+}
+function logout(){
+  localStorage.removeItem('kefko_token');
+  localStorage.removeItem('kefko_user');
+  location.reload();
+}
+async function onLoggedIn(user){
+  hideAuth();
+  currentRole = user.role || 'agent';
+  document.getElementById('avatarBtn').textContent=initials(user.name);
+  document.getElementById('menuName').textContent=user.name;
+  document.getElementById('menuEmail').textContent=user.email+' · '+(user.roleLabel||currentRole);
+  applyRoleUI();
+  await loadAll();
+}
+
+/* ---------------- storage (backed by API) ---------------- */
+const KEYS=['sales','customers','inventory','expenses','payroll','bank'];
+const store={sales:[],customers:[],inventory:[],expenses:[],payroll:[],bank:[]};
+let bookingRequests=[];
+let brFilter='All';
+async function loadAll(){
+  for(const k of KEYS){
+    if(!canRead(k)){ store[k]=[]; continue; }
+    const rows = await api('/api/'+k); if(rows) store[k]=rows;
+  }
+  if(canRead('bookingrequests')){ const rows=await api('/api/booking-requests'); if(rows) bookingRequests=rows; }
+  renderDashboard();renderSales();renderCustomers();renderInventory();renderExpenses();renderPayroll();renderBank();renderBookingRequests();
+}
+function fmt(n){return 'ETB '+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});}
+function today(){return new Date().toISOString().slice(0,10);}
+
+/* ---------------- nav ---------------- */
+const titles={dashboard:['Dashboard',"Overview of your agency's performance"],
+  bookingrequests:['Booking Requests','Customer requests submitted from your website'],
+  sales:['Sales & Bookings','Log ticket sales and track commission'],
+  customers:['Customers','Your client relationships and booking history'],
+  inventory:['Ticket Inventory','Airline allotments and remaining stock'],
+  expenses:['Expenses','Office and operational costs'],
+  payroll:['Payroll','Staff salaries and deductions'],
+  bank:['Bank Statement',"Reconcile agency bank activity"],
+  reports:['Reports','Summaries you can download or email'],
+  team:['Team','Everyone registered, by department']};
+document.querySelectorAll('.navitem').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.navitem').forEach(n=>n.classList.remove('active'));
+    el.classList.add('active');
+    const v=el.dataset.view;
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    document.getElementById('view-'+v).classList.add('active');
+    document.getElementById('pageTitle').textContent=titles[v][0];
+    document.getElementById('pageSub').textContent=titles[v][1];
+    closeSidebar();
+    if(v==='dashboard')renderDashboard();
+    if(v==='reports')renderReports();
+    if(v==='team')renderTeam();
+  });
+});
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarBackdrop').classList.add('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('open');
+}
+document.getElementById('todayPill').textContent=new Date().toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+document.addEventListener('click',(e)=>{
+  const box=document.querySelector('.userbox');
+  if(box && !box.contains(e.target)) document.getElementById('userMenu').classList.remove('open');
+});
+
+function toggleForm(name){ document.getElementById('form-'+name).classList.toggle('open'); }
+
+/* ---------------- BOOKING REQUESTS ---------------- */
+function setBRFilter(f){
+  brFilter=f;
+  document.querySelectorAll('#br_period button').forEach(b=>b.classList.toggle('active',b.dataset.p===f));
+  renderBookingRequests();
+}
+function brStatusBadge(s){
+  const cls = s==='Confirmed'?'green':s==='Rejected'?'red':s==='Contacted'?'amber':'amber';
+  return `<span class="badge ${cls}">${s}</span>`;
+}
+async function setBRStatus(id,status){
+  const row = await api(`/api/booking-requests/${id}`,{method:'PATCH', body:JSON.stringify({status})});
+  if(!row)return;
+  const idx=bookingRequests.findIndex(r=>r.id===id);
+  if(idx>-1) bookingRequests[idx]=row;
+  renderBookingRequests();
+  renderDashboard();
+}
+function convertToSale(req){
+  document.querySelector('.navitem[data-view="sales"]').click();
+  toggleForm('sales');
+  document.getElementById('sales_passenger').value=req.name;
+  document.getElementById('sales_route').value=[req.origin,req.destination].filter(Boolean).join(' – ');
+  if(req.travel_date) document.getElementById('sales_date').value=req.travel_date;
+  setBRStatus(req.id,'Confirmed');
+}
+function renderBookingRequests(){
+  const rows = bookingRequests.filter(r=> brFilter==='All' || r.status===brFilter)
+    .sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''));
+  const body=document.getElementById('brBody');
+  if(!body)return;
+  body.innerHTML = rows.length? rows.map(r=>`<tr>
+      <td>${(r.created_at||'').slice(0,10)}</td>
+      <td><b>${r.name}</b></td>
+      <td>${r.phone||'—'}${r.email?'<br><span class="meta" style="color:var(--gray);font-size:11px;">'+r.email+'</span>':''}</td>
+      <td>${[r.origin,r.destination].filter(Boolean).join(' → ')||'—'}</td>
+      <td>${r.travel_date||'—'}</td>
+      <td>${r.passengers||1}</td>
+      <td style="max-width:160px;white-space:normal;">${r.notes||'—'}</td>
+      <td>${brStatusBadge(r.status)}</td>
+      <td class="rowactions">
+        ${r.status==='Pending'?`<button class="iconbtn" title="Mark Contacted" onclick="setBRStatus(${r.id},'Contacted')">📞</button>`:''}
+        ${r.status!=='Confirmed'&&r.status!=='Rejected'?`<button class="iconbtn" title="Confirm & Create Sale" onclick='convertToSale(${JSON.stringify(r).replace(/'/g,"&#39;")})'>✅</button>`:''}
+        ${r.status!=='Rejected'&&r.status!=='Confirmed'?`<button class="iconbtn" title="Reject" onclick="setBRStatus(${r.id},'Rejected')">✖</button>`:''}
+      </td>
+    </tr>`).join('')
+    : `<tr><td colspan="9" class="empty">No booking requests yet. Share your <a href="/book" target="_blank">public booking page</a> with customers.</td></tr>`;
+}
+
+/* ---------------- SALES ---------------- */
+let salesPeriod='all';
+function calcSale(){
+  const val=+document.getElementById('sales_value').value||0;
+  const pc=+document.getElementById('sales_partcomm').value||0;
+  const pct=+document.getElementById('sales_commpct').value||0;
+  const sub=val+pc;
+  const total=sub+(sub*pct/100);
+  document.getElementById('sales_subtotal').value=sub.toFixed(2);
+  document.getElementById('sales_total').value=total.toFixed(2);
+}
+async function saveSale(){
+  const passenger=document.getElementById('sales_passenger').value.trim();
+  if(!passenger){alert('Passenger name is required');return;}
+  const row = await api('/api/sales',{method:'POST', body: JSON.stringify({
+    date:document.getElementById('sales_date').value||today(),
+    passenger,
+    airline:document.getElementById('sales_airline').value,
+    route:document.getElementById('sales_route').value,
+    ticket:document.getElementById('sales_ticket').value,
+    value:+document.getElementById('sales_value').value||0,
+    partcomm:+document.getElementById('sales_partcomm').value||0,
+    subtotal:+document.getElementById('sales_subtotal').value||0,
+    commpct:+document.getElementById('sales_commpct').value||0,
+    total:+document.getElementById('sales_total').value||0,
+    status:document.getElementById('sales_status').value
+  })});
+  if(!row)return;
+  store.sales.unshift(row);
+  ['sales_passenger','sales_airline','sales_route','sales_ticket','sales_value','sales_partcomm','sales_subtotal','sales_commpct','sales_total'].forEach(id=>document.getElementById(id).value='');
+  toggleForm('sales');
+  renderSales();
+}
+async function delRow(table,id,render){
+  await api(`/api/${table}/${id}`,{method:'DELETE'});
+  store[table]=store[table].filter(r=>r.id!==id);
+  render();
+}
+function inPeriod(dateStr,period){
+  if(period==='all')return true;
+  const d=new Date(dateStr), now=new Date();
+  if(period==='daily')return dateStr===today();
+  if(period==='weekly'){const diff=(now-d)/86400000; return diff>=0 && diff<7;}
+  if(period==='monthly')return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+  if(period==='yearly')return d.getFullYear()===now.getFullYear();
+  return true;
+}
+function setPeriod(scope,p){
+  if(scope==='sales'){salesPeriod=p;document.querySelectorAll('#sales_period button').forEach(b=>b.classList.toggle('active',b.dataset.p===p));renderSales();}
+  if(scope==='rep'){repPeriod=p;document.querySelectorAll('#rep_period button').forEach(b=>b.classList.toggle('active',b.dataset.p===p));renderReports();}
+}
+function renderSales(){
+  const q=(document.getElementById('sales_search').value||'').toLowerCase();
+  const rows=store.sales.filter(r=>inPeriod(r.date,salesPeriod) && (!q || [r.passenger,r.route,r.ticket,r.airline].join(' ').toLowerCase().includes(q)))
+    .sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const body=document.getElementById('salesBody');
+  body.innerHTML = rows.length? rows.map(r=>`<tr><td>${r.date}</td><td>${r.passenger}</td><td>${r.airline||'—'}</td><td>${r.route||'—'}</td><td>${r.ticket||'—'}</td><td>${fmt(r.value)}</td><td><b>${fmt(r.total)}</b></td><td>${statusBadge(r.status)}</td><td class="rowactions"><button class="iconbtn" onclick="delRow('sales',${r.id},renderSales)">🗑</button></td></tr>`).join('')
+    : `<tr><td colspan="9" class="empty">No sales logged yet. Click "New Sale" to add one.</td></tr>`;
+}
+function statusBadge(s){
+  const cls = s==='Paid'?'green':s==='Pending'?'red':'amber';
+  return `<span class="badge ${cls}">${s}</span>`;
+}
+
+/* ---------------- CUSTOMERS ---------------- */
+async function saveCustomer(){
+  const name=document.getElementById('cust_name').value.trim();
+  if(!name){alert('Name is required');return;}
+  const row = await api('/api/customers',{method:'POST', body: JSON.stringify({
+    name,phone:document.getElementById('cust_phone').value,email:document.getElementById('cust_email').value,
+    company:document.getElementById('cust_company').value,notes:document.getElementById('cust_notes').value
+  })});
+  if(!row)return;
+  store.customers.unshift(row);
+  ['cust_name','cust_phone','cust_email','cust_company','cust_notes'].forEach(id=>document.getElementById(id).value='');
+  toggleForm('customers');
+  renderCustomers();
+}
+function renderCustomers(){
+  const q=(document.getElementById('cust_search').value||'').toLowerCase();
+  const rows=store.customers.filter(c=>!q||[c.name,c.phone,c.company].join(' ').toLowerCase().includes(q));
+  const body=document.getElementById('custBody');
+  body.innerHTML = rows.length? rows.map(c=>{
+    const bookings=store.sales.filter(s=>(s.passenger||'').toLowerCase()===(c.name||'').toLowerCase());
+    const spend=bookings.reduce((a,s)=>a+s.total,0);
+    return `<tr><td><b>${c.name}</b></td><td>${c.phone||'—'}</td><td>${c.email||'—'}</td><td>${c.company||'—'}</td><td>${bookings.length}</td><td>${fmt(spend)}</td><td class="rowactions"><button class="iconbtn" onclick="delRow('customers',${c.id},renderCustomers)">🗑</button></td></tr>`;
+  }).join('') : `<tr><td colspan="7" class="empty">No customers yet. Click "New Customer" to add one.</td></tr>`;
+}
+
+/* ---------------- INVENTORY ---------------- */
+function calcInv(){
+  const a=+document.getElementById('inv_alloc').value||0;
+  const u=+document.getElementById('inv_used').value||0;
+  document.getElementById('inv_remaining').value=Math.max(a-u,0);
+}
+async function saveInventory(){
+  const airline=document.getElementById('inv_airline').value.trim();
+  if(!airline){alert('Airline is required');return;}
+  const row = await api('/api/inventory',{method:'POST', body: JSON.stringify({
+    airline,route:document.getElementById('inv_route').value,alloc:+document.getElementById('inv_alloc').value||0,
+    used:+document.getElementById('inv_used').value||0,remaining:+document.getElementById('inv_remaining').value||0,
+    validity:document.getElementById('inv_validity').value
+  })});
+  if(!row)return;
+  store.inventory.unshift(row);
+  ['inv_airline','inv_route','inv_alloc','inv_used','inv_remaining','inv_validity'].forEach(id=>document.getElementById(id).value='');
+  toggleForm('inventory');
+  renderInventory();
+}
+function renderInventory(){
+  const q=(document.getElementById('inv_search').value||'').toLowerCase();
+  const rows=store.inventory.filter(r=>!q||[r.airline,r.route].join(' ').toLowerCase().includes(q));
+  const body=document.getElementById('invBody');
+  body.innerHTML = rows.length? rows.map(r=>{
+    const low = r.alloc>0 && (r.remaining/r.alloc)<=0.2;
+    return `<tr><td><b>${r.airline}</b></td><td>${r.route||'—'}</td><td>${r.alloc}</td><td>${r.used}</td><td>${low?`<span class="badge red">${r.remaining} left</span>`:r.remaining}</td><td>${r.validity||'—'}</td><td class="rowactions"><button class="iconbtn" onclick="delRow('inventory',${r.id},renderInventory)">🗑</button></td></tr>`;
+  }).join('') : `<tr><td colspan="7" class="empty">No allotments yet. Click "New Allotment" to add one.</td></tr>`;
+}
+
+/* ---------------- EXPENSES ---------------- */
+async function saveExpense(){
+  const desc=document.getElementById('exp_desc').value.trim();
+  if(!desc){alert('Description is required');return;}
+  const row = await api('/api/expenses',{method:'POST', body: JSON.stringify({
+    date:document.getElementById('exp_date').value||today(),category:document.getElementById('exp_category').value,
+    desc,amount:+document.getElementById('exp_amount').value||0,paidby:document.getElementById('exp_paidby').value
+  })});
+  if(!row)return;
+  store.expenses.unshift(row);
+  ['exp_desc','exp_amount','exp_paidby'].forEach(id=>document.getElementById(id).value='');
+  toggleForm('expenses');
+  renderExpenses();
+}
+function renderExpenses(){
+  const q=(document.getElementById('exp_search').value||'').toLowerCase();
+  const rows=store.expenses.filter(r=>!q||[r.desc,r.category].join(' ').toLowerCase().includes(q)).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const body=document.getElementById('expBody');
+  body.innerHTML = rows.length? rows.map(r=>`<tr><td>${r.date}</td><td>${r.category}</td><td>${r.desc}</td><td>${fmt(r.amount)}</td><td>${r.paidby||'—'}</td><td class="rowactions"><button class="iconbtn" onclick="delRow('expenses',${r.id},renderExpenses)">🗑</button></td></tr>`).join('')
+    : `<tr><td colspan="6" class="empty">No expenses logged yet.</td></tr>`;
+}
+
+/* ---------------- PAYROLL ---------------- */
+function calcPay(){
+  const b=+document.getElementById('pay_base').value||0;
+  const a=+document.getElementById('pay_allow').value||0;
+  const d=+document.getElementById('pay_deduct').value||0;
+  document.getElementById('pay_net').value=(b+a-d).toFixed(2);
+}
+async function savePayroll(){
+  const emp=document.getElementById('pay_employee').value.trim();
+  if(!emp){alert('Employee name is required');return;}
+  const row = await api('/api/payroll',{method:'POST', body: JSON.stringify({
+    month:document.getElementById('pay_month').value,employee:emp,base:+document.getElementById('pay_base').value||0,
+    allow:+document.getElementById('pay_allow').value||0,deduct:+document.getElementById('pay_deduct').value||0,
+    net:+document.getElementById('pay_net').value||0
+  })});
+  if(!row)return;
+  store.payroll.unshift(row);
+  ['pay_employee','pay_base','pay_allow','pay_deduct','pay_net'].forEach(id=>document.getElementById(id).value='');
+  toggleForm('payroll');
+  renderPayroll();
+}
+function renderPayroll(){
+  const q=(document.getElementById('pay_search').value||'').toLowerCase();
+  const rows=store.payroll.filter(r=>!q||(r.employee||'').toLowerCase().includes(q)).sort((a,b)=>(b.month||'').localeCompare(a.month||''));
+  const body=document.getElementById('payBody');
+  body.innerHTML = rows.length? rows.map(r=>`<tr><td>${r.month||'—'}</td><td><b>${r.employee}</b></td><td>${fmt(r.base)}</td><td>${fmt(r.allow)}</td><td>${fmt(r.deduct)}</td><td><b>${fmt(r.net)}</b></td><td class="rowactions"><button class="iconbtn" onclick="delRow('payroll',${r.id},renderPayroll)">🗑</button></td></tr>`).join('')
+    : `<tr><td colspan="7" class="empty">No payroll entries yet.</td></tr>`;
+}
+
+/* ---------------- BANK ---------------- */
+async function saveBank(){
+  const desc=document.getElementById('bank_desc').value.trim();
+  if(!desc){alert('Description is required');return;}
+  const row = await api('/api/bank',{method:'POST', body: JSON.stringify({
+    date:document.getElementById('bank_date').value||today(),desc,bank:document.getElementById('bank_bank').value,
+    amount:+document.getElementById('bank_amount').value||0,ref:document.getElementById('bank_ref').value
+  })});
+  if(!row)return;
+  store.bank.unshift(row);
+  ['bank_desc','bank_bank','bank_amount','bank_ref'].forEach(id=>document.getElementById(id).value='');
+  toggleForm('bank');
+  renderBank();
+}
+function renderBank(){
+  const q=(document.getElementById('bank_search').value||'').toLowerCase();
+  const rows=store.bank.filter(r=>!q||[r.desc,r.ref].join(' ').toLowerCase().includes(q)).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const body=document.getElementById('bankBody');
+  body.innerHTML = rows.length? rows.map(r=>`<tr><td>${r.date}</td><td>${r.desc}</td><td>${r.bank||'—'}</td><td>${fmt(r.amount)}</td><td>${r.ref||'—'}</td><td class="rowactions"><button class="iconbtn" onclick="delRow('bank',${r.id},renderBank)">🗑</button></td></tr>`).join('')
+    : `<tr><td colspan="6" class="empty">No bank entries yet.</td></tr>`;
+}
+
+/* ---------------- DASHBOARD ---------------- */
+function renderDashboard(){
+  const now=new Date();
+  const monthSales=store.sales.filter(s=>{const d=new Date(s.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const monthExp=store.expenses.filter(e=>{const d=new Date(e.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const totalSales=monthSales.reduce((a,s)=>a+s.total,0);
+  const totalExp=monthExp.reduce((a,e)=>a+e.amount,0);
+  const totalPayroll=store.payroll.filter(p=>p.month===now.toISOString().slice(0,7)).reduce((a,p)=>a+p.net,0);
+  const netProfit=totalSales-totalExp-totalPayroll;
+  const kpis=[
+    ['Sales This Month',fmt(totalSales)],
+    ['Tickets Sold',monthSales.length],
+    ['Expenses This Month',fmt(totalExp)],
+    ['Net Profit',fmt(netProfit)],
+    ['Active Customers',store.customers.length]
+  ];
+  document.getElementById('kpiRow').innerHTML=kpis.map(k=>`<div class="kpi"><div class="lbl">${k[0]}</div><div class="kpi-value">${k[1]}</div></div>`).join('');
+
+  const days=[...Array(14)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-(13-i));return d.toISOString().slice(0,10);});
+  const vals=days.map(d=>store.sales.filter(s=>s.date===d).reduce((a,s)=>a+s.total,0));
+  const max=Math.max(...vals,1);
+  const W=560,H=190,pad=10;
+  const pts=vals.map((v,i)=>{const x=pad+(i*(W-2*pad)/(vals.length-1)); const y=H-pad-((v/max)*(H-2*pad)); return [x,y];});
+  const path='M'+pts.map(p=>p.join(',')).join(' L');
+  const area=path+` L${W-pad},${H-pad} L${pad},${H-pad} Z`;
+  document.getElementById('trendChart').innerHTML=`
+    <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1CA6E0" stop-opacity="0.25"/><stop offset="100%" stop-color="#1CA6E0" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#g1)"/>
+    <path d="${path}" fill="none" stroke="#1CA6E0" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#0E7FB3"/>`).join('')}
+  `;
+  document.getElementById('salesTrendTotal').textContent=fmt(vals.reduce((a,b)=>a+b,0))+' total';
+
+  const recent=[...store.sales].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
+  document.getElementById('recentSales').innerHTML = recent.length? recent.map(r=>`<div class="listrow"><div><div class="name">${r.passenger}</div><div class="meta">${r.route||'—'} · ${r.date}</div></div><div>${fmt(r.total)}</div></div>`).join('')
+    : `<div class="empty">No sales yet</div>`;
+
+  const low=store.inventory.filter(r=>r.alloc>0 && (r.remaining/r.alloc)<=0.2).slice(0,5);
+  document.getElementById('lowInventory').innerHTML = low.length? low.map(r=>`<div class="listrow"><div><div class="name">${r.airline}</div><div class="meta">${r.route||'—'}</div></div><span class="badge red">${r.remaining} left</span></div>`).join('')
+    : `<div class="empty">All allotments healthy</div>`;
+
+  const brCard=document.getElementById('dashBookingRequests').closest('.card');
+  if(canRead('bookingrequests')){
+    brCard.style.display='';
+    const pending=bookingRequests.filter(r=>r.status==='Pending').sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''));
+    document.getElementById('brPendingCount').textContent=pending.length+' pending';
+    document.getElementById('dashBookingRequests').innerHTML = pending.length? pending.slice(0,5).map(r=>`<div class="listrow"><div><div class="name">${r.name}</div><div class="meta">${[r.origin,r.destination].filter(Boolean).join(' → ')||'No route given'} · ${r.phone||''}</div></div></div>`).join('')
+      : `<div class="empty">No pending requests</div>`;
+  } else {
+    brCard.style.display='none';
+  }
+}
+
+/* ---------------- REPORTS ---------------- */
+let repPeriod='daily';
+function renderReports(){
+  const rows=store.sales.filter(r=>inPeriod(r.date,repPeriod)).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const total=rows.reduce((a,r)=>a+r.total,0);
+  const val=rows.reduce((a,r)=>a+r.value,0);
+  const kpis=[['Period',repPeriod[0].toUpperCase()+repPeriod.slice(1)],['Tickets',rows.length],['Sale Value',fmt(val)],['Total Revenue',fmt(total)]];
+  document.getElementById('repKpiRow').innerHTML=kpis.map(k=>`<div class="kpi"><div class="lbl">${k[0]}</div><div class="kpi-value">${k[1]}</div></div>`).join('');
+  document.getElementById('repCount').textContent=rows.length+' records';
+  document.getElementById('repBody').innerHTML = rows.length? rows.map(r=>`<tr><td>${r.date}</td><td>${r.passenger}</td><td>${r.route||'—'}</td><td>${fmt(r.value)}</td><td>${fmt(r.total)}</td><td>${statusBadge(r.status)}</td></tr>`).join('')
+    : `<tr><td colspan="6" class="empty">No sales in this period.</td></tr>`;
+}
+function downloadReportCSV(){
+  const rows=store.sales.filter(r=>inPeriod(r.date,repPeriod));
+  let csv='Date,Passenger,Airline,Route,Ticket,SaleValue,PartnerCommission,Subtotal,CommissionPct,Total,Status\n';
+  rows.forEach(r=>{csv+=`${r.date},${r.passenger},${r.airline},${r.route},${r.ticket},${r.value},${r.partcomm},${r.subtotal},${r.commpct},${r.total},${r.status}\n`;});
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`Kefko_Sales_${repPeriod}_${today()}.csv`;
+  a.click();
+}
+function emailReport(){
+  const rows=store.sales.filter(r=>inPeriod(r.date,repPeriod));
+  const total=rows.reduce((a,r)=>a+r.total,0);
+  const subject=`Kefko Travel Agent — ${repPeriod} Sales Report`;
+  const body=`Sales Report (${repPeriod})\n\nTickets sold: ${rows.length}\nTotal revenue: ${fmt(total)}\n\nGenerated by Kefko Business System.`;
+  window.location.href=`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+/* ---------------- init ---------------- */
+document.getElementById('sales_date').value=today();
+document.getElementById('exp_date').value=today();
+document.getElementById('bank_date').value=today();
+
+const savedToken=localStorage.getItem('kefko_token');
+const savedUser=JSON.parse(localStorage.getItem('kefko_user')||'null');
+if(savedToken && savedUser){ onLoggedIn(savedUser); } else { showAuth(); }
+</script>
+</body>
+</html>
